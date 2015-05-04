@@ -16,6 +16,7 @@ print f.readline().strip()
 
 
 X = []
+DT = []
 Y0 = []
 Y1 = []
 Y2 = []
@@ -34,9 +35,12 @@ for line in f:
   
 
   X.append( (Time - StartTime).total_seconds() )
+  if len(X) > 1:
+    DT.append(X[-1] -X[-2])
   Y0.append( V[1])
   Y1.append( V[2] - V[1]/1e6 )
   Y2.append( V[4] - V[3] )
+
 
 
 
@@ -64,44 +68,52 @@ g3.GetXaxis().SetTitle('Time [s]')
 g3.GetYaxis().SetTitle('Taper [mm]')
 g3.Draw("Al")
 
-c1.SaveAs("test.pdf")
+#c1.SaveAs("test.pdf")
 
 
 
 hGapDiff = TH1F('GapDiff', 'GapSet - Gap Measured', 50, -0.002, 0.002)
 hGapDiff.GetXaxis().SetTitle('GapSet - Gap Measured [mm]')
-for y in Y2:
+for y in Y1:
   hGapDiff.Fill(y)
 
 c2 = TCanvas()
 c2.cd()
 hGapDiff.Draw('hist')
-c2.SaveAs('test2.pdf')
+
+Name = sys.argv[1][:-4] + '_DeltaGap.pdf'
+c2.SaveAs(Name)
+
+
+
+hTaper = TH1F('Taper', 'Taper', 50, -0.010, 0.010)
+hTaper.GetXaxis().SetTitle('Taper [mm]')
+for y in Y2:
+  hTaper.Fill(y)
+
+c2 = TCanvas()
+c2.cd()
+hTaper.Draw('hist')
+
+Name = sys.argv[1][:-4] + '_Taper.pdf'
+c2.SaveAs(Name)
+
+
+
+hTime = TH1F('Time', 'Time', 50, 0, 10)
+hTime.GetXaxis().SetTitle('Time [s]')
+for y in DT:
+  hTime.Fill(y)
+
+c2 = TCanvas()
+c2.cd()
+hTime.Draw('hist')
+
+Name = sys.argv[1][:-4] + '_Time.pdf'
+c2.SaveAs(Name)
+
+
 exit(0)
 
 
-Name = sys.argv[1][:-4] + '_Summary.png'
-plt.savefig(Name)
 
-
-plt.cla()
-plt.figure()
-plt.hist(Y1)
-mean = numpy.mean(Y1)
-std  = numpy.std(Y1)
-print mean, std
-plt.xlabel("Gapset - Measured Gap [mm]")
-Name = sys.argv[1][:-4] + '_DaltaGap.png'
-plt.savefig(Name)
-
-
-
-plt.cla()
-plt.figure()
-plt.hist(Y2)
-mean = numpy.mean(Y2)
-std  = numpy.std(Y2)
-print mean, std
-plt.xlabel("Taper [mm]")
-Name = sys.argv[1][:-4] + '_Taper.png'
-plt.savefig(Name)
